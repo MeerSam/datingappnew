@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AccountService } from '../../core/services/account-service';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastService } from '../../core/services/toast-service';
+import { themes } from '../theme';
 
 @Component({
   selector: 'app-nav',
@@ -10,15 +11,31 @@ import { ToastService } from '../../core/services/toast-service';
   templateUrl: './nav.html',
   styleUrl: './nav.css'
 })
-export class Nav {
+export class Nav implements OnInit {
+
   protected accountService = inject(AccountService)
   private router = inject(Router);
   private toast = inject(ToastService);
   protected creds: any = {}
-  //protected loggedIn = signal(false)
-  
+  protected selectedTheme = signal<string>(localStorage.getItem('theme') || 'light');
+  protected themes = themes;
+ //protected loggedIn = signal(false)
+
+  ngOnInit(): void {
+    document.documentElement.setAttribute('data-theme', this.selectedTheme());
+  }
+
+  handleSelectTheme(theme: string) {
+    this.selectedTheme.set(theme);
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    // closing dropdown after the theme selected
+    const elem = document.activeElement as HTMLDivElement;
+    if (elem) elem.blur();
+  }
+
   login() {
-    console.log('Login method called'); 
+    console.log('Login method called');
     this.accountService.login(this.creds).subscribe(
       {
         next: () => {
@@ -27,18 +44,18 @@ export class Nav {
           this.toast.success('Logged In successfully');
           this.creds = {};
           //  result -> () console.log(result);
-        }, 
-        error: error => { 
+        },
+        error: error => {
           this.toast.error(error.error);
-        } , 
-        complete: () =>   console.log('Completed the http request')
+        },
+        complete: () => console.log('Completed the http request')
       });
   }
 
-  logout(){
+  logout() {
     console.log("Logout initiated");
     // this.loggedIn.set(false);
     this.accountService.logout();
   }
-   
+
 }

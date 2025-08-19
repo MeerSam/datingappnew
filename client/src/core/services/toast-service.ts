@@ -23,6 +23,7 @@ export class ToastService {
 
     const toast = document.createElement('div');
     toast.classList.add('alert', alertClass, 'shadow-lg');
+    //  `Back ticks allows us to use template strings Javascript + normal strings'
     toast.innerHTML = `
     <span>${message}</span>
     <button class="ml-4 btn btn-sm btn-ghost" >x</button>

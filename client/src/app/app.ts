@@ -21,7 +21,7 @@ export class App  {
   // private accountService = inject(AccountService);
   protected router = inject(Router)
   // protected http = inject(HttpClient);
-  protected readonly title = signal('Dating App'); // signal = track and is responsive wrapper
+  protected readonly title = signal('Meeting App'); // signal = track and is responsive wrapper
   // protected members = signal<User[]>([]);
 
   // constructor(protected http: HttpClient){} // previously done

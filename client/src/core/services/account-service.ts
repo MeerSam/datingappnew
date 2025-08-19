@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { LoginCreds, RegisterCreds, User } from '../../types/user';
 import { tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 // what this has is class can use dependency injection from angular into other components and classes
 
@@ -20,7 +21,7 @@ export class AccountService {
   private  http = inject(HttpClient);
   currentUser = signal<User | null>(null);
 
-  baseUrl ='https://localhost:5001/api/';
+  baseUrl = environment.apiUrl;
 
   register(creds:RegisterCreds){
     return this.http.post<User>(this.baseUrl + 'account/register', creds).pipe(
