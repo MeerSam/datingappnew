@@ -1,24 +1,66 @@
 <div class="card bg-base-100 w-1/2 mx-auto flex flex-col p-6 rounded-lg shadow-lg">
     <div class="card-title justify-center text-3xl text-primary">Sign up</div>
     <div class="card-body w-full">
-        <form #registerForm="ngForm" class="flex flex-col gap-4 w-full" (ngSubmit)="register()">
+        <form [formGroup]="registerForm" class="flex flex-col gap-4 w-full" (ngSubmit)="register()"> 
+            <label class="floating-label">
+                <span>Email</span>
+                <input class="input w-full" formControlName="email" placeholder="Email" />
+            </label>
+            <label class="floating-label">
+                <span>Display Name</span>
+                <input 
+                    class="input w-full" 
+                    [class.input-error]="registerForm.controls['displayName'].invalid 
+                        && registerForm.controls['displayName'].touched"
+                    formControlName="displayName" 
+                    placeholder="Display Name" />
+                    @if (registerForm.controls['displayName'].invalid 
+                        && registerForm.controls['displayName'].touched){
+                            <div class="validation-hint text-error">Display Name is Required Field !</div>
+
+                        }
+            </label>
+            <label class="floating-label">
+                <span>Password</span>
+                <input type="password" class="input w-full" formControlName="password" placeholder="Password" />
+            </label>
+            <label class="floating-label">
+                <span>Confirm Password</span>
+                <input type="password" class="input w-full" formControlName="confirmPassword" placeholder="Confirm Password" />
+            </label> 
+            <div class="flex items-center justify-end gap-3">
+                <button class="btn" type="button" (click)="cancel()">Cancel</button>
+                <button 
+                    [disabled]="!registerForm.valid" class="btn btn-primary" type="submit">Register</button>
+            </div>
+        </form>
+    </div>
+    <div class="flex flex-col items-start px-3 w-full mockup-code text-lg">
+        <div>Form value: {{registerForm.value | json}}</div>  <!-- | json have to import JsonPipe-->
+        <div>Form status value: {{registerForm.status | json}}</div>  <!-- have to import JsonPipe-->
+    </div>
+</div>
+
+<!-- 
+
+<form #registerForm="ngForm" class="flex flex-col gap-4 w-full" (ngSubmit)="register()">
             <input type="text" class="input w-full" name="email" [(ngModel)]="creds.email"
                 placeholder="Email or Username" />
             <input type="text" class="input w-full" name="displayName" [(ngModel)]="creds.displayName"
                 placeholder="Display Name" />
             <input type="password" class="input w-full" name="password" [(ngModel)]="creds.password"
-                placeholder="Password" />
+                placeholder="Password" /> -->
                 <!-- <select class="select w-full">
                     <option disabled selected>Pick a member</option>
                     @for (member of memberFromHome(); track $index) {
                         <option value="{{member.id}}" >{{member.displayName}}</option>
                     }
 
-                </select> -->
+                </select> --><!--
             <div class="flex items-center justify-end gap-3">
                 <button class="btn" type="button" (click)="cancel()">Cancel</button>
                 <button class="btn btn-primary" type="submit">Register</button>
             </div>
         </form>
-    </div>
-</div>
+
+-->
