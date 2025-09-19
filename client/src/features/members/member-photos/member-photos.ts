@@ -44,6 +44,10 @@ export class MemberPhotos implements OnInit {
         this.memberService.editMode.set(false);
         this.loading.set(false);
         this.photos.update(photos => [...photos, photo]) //... spread operator existing array of photos  and add also the new photo to the array
+
+        if (!this.memberService.member()?.imageUrl) {
+          this.setMainLocalPhoto(photo)
+        }
       },
       error: error => {
         console.log('Error uploading image: ', error);
@@ -54,14 +58,8 @@ export class MemberPhotos implements OnInit {
 
   setMainPhoto(photo: Photo) {
     this.memberService.setMainPhoto(photo).subscribe({
-      next: () => {
-        const currentUser = this.accountService.currentUser();
-        if (currentUser) currentUser.imageUrl = photo.url;
-        this.accountService.setCurrentUser(currentUser as User);
-        this.memberService.member.update(member => ({
-          ...member, imageUrl: photo.url
-        }) as Member) //From this we'll take the existing properties of the member...member  and we'll set the image URL to be the photo.url 
-
+      next: () => { 
+        this.setMainLocalPhoto(photo)
       }
     })
 
@@ -75,6 +73,15 @@ export class MemberPhotos implements OnInit {
       }
     })
 
+  }
+
+  private setMainLocalPhoto(photo: Photo){
+    const currentUser = this.accountService.currentUser();
+        if (currentUser) currentUser.imageUrl = photo.url;
+        this.accountService.setCurrentUser(currentUser as User);
+        this.memberService.member.update(member => ({
+          ...member, imageUrl: photo.url
+        }) as Member) //From this we'll take the existing properties of the member...member  and we'll set the image URL to be the photo.url 
   }
 
   // get photoMocks() {
