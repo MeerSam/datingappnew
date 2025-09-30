@@ -3,6 +3,7 @@ using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 //using Microsoft.AspNetCore.Http;
@@ -21,8 +22,8 @@ namespace API.Controllers
     public class MembersController(IMemberRepository memberRepository,
     IPhotoService photoService) : BaseApiController
     {
-        [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers()
+        [HttpGet]//localhost:5001/api/members
+        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery]MemberParams memberParams)
         {
             // Injecting AppDbContext as ->   MembersController(AppDbContext context)
             // Changed to IMemberRepository
@@ -31,8 +32,8 @@ namespace API.Controllers
             // return members;
 
             // return await memberRepository.GetMembersAsync(); // gives error so we wrap in OK()
-
-            return Ok(await memberRepository.GetMembersAsync());
+            memberParams.CurrentMemberId = User.GetMemberId();
+            return Ok(await memberRepository.GetMembersAsync(memberParams));
 
         }
 

@@ -1,8 +1,9 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { EditableMember, Member, Photo } from '../../types/member';
+import { EditableMember, Member, MemberParams, Photo } from '../../types/member';
 import { tap } from 'rxjs';
+import { PaginatedResult } from '../../types/pagination';
 // import { AccountService } from './account-service';
 
 @Injectable({
@@ -17,8 +18,21 @@ export class MemberService {
   editMode = signal(false);
   member = signal<Member | null>(null);
 
-  getMembers() {
-    return this.http.get<Member[]>(this.baseUrl + 'members');
+  getMembers(memberParams :MemberParams) {
+    // pageNumber = 1, pageSize: number = 5
+    let params  = new HttpParams(); // HttpParams: this will allow us to send something up as query string parameters to our API.
+    params =  params.append('pageNumber', memberParams.pageNumber);
+    params =  params.append('pageSize', memberParams.pageSize);
+    params =  params.append('minAge', memberParams.minAge);
+    params =  params.append('maxAge', memberParams.maxAge);
+    params =  params.append('orderBy', memberParams.orderBy); 
+    if (memberParams.gender)  params =  params.append('gender', memberParams.gender);
+    // below {params: params} can be just replaced as {params} 
+    return this.http.get<PaginatedResult<Member>>(this.baseUrl + 'members', {params: params}).pipe(
+      tap(() => {
+        localStorage.setItem('filters', JSON.stringify(memberParams))
+      })
+    );
     //, this.gethttpOptions() removed as we will use Interceptor  jwt-interceptor on each of our requests
   }
 
