@@ -14,19 +14,41 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   const busyService = inject(BusyService);
 
   //method to create a cache key
-  const generateCacheKey = (url:string, params:HttpParams): string => {
-    const paramString =params.keys().map(key => `${key}=${params.get(key)}`).join('&');
+  const generateCacheKey = (url: string, params: HttpParams): string => {
+    const paramString = params.keys().map(key => `${key}=${params.get(key)}`).join('&');
 
-    return paramString ? `${url}?${paramString}` : url; 
+    return paramString ? `${url}?${paramString}` : url;
   }
 
+  // we are creating a method 178 lesson to invalidate cache
+
+  //method: invalidateCache => we're effectively going to loop over our cache keys. 
+  // And we're going to look for a pattern that matches the URL inside our cache keys, and if it finds it
+  // based on what we passed to this method, then we're going to delete that cache key.
+  // And then the next time a request comes in because that's not going to be available inside the cache.
+  // That's going to force us to go out to the API to get fresh data.
+  const invalidateCache = (urlPattern: string) => {
+    // method: invalidateCache
+    for (const key of cache.keys()) {
+      if (key.includes(urlPattern)) {
+        cache.delete(key);
+        console.log(`Cache invalidated for:  ${key}`);
+      }
+
+    }
+  }
 
   const cachKey = generateCacheKey(req.url, req.params);
-  if (req.method === 'GET'){
+
+  if (req.method.includes('POST') && req.url.includes('/likes')) {
+    invalidateCache('/likes')
+  }
+
+  if (req.method === 'GET') {
     // const cachedResponse = cache.get(req.url);
     console.log(cachKey);
     const cachedResponse = cache.get(cachKey);
-    if(cachedResponse) {
+    if (cachedResponse) {
       return of(cachedResponse);
     }
   }
@@ -37,10 +59,10 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   // 500ms half second 
   return next(req).pipe(
     delay(500),
-    tap( reponse => {
+    tap(reponse => {
       cache.set(cachKey, reponse);
     }),
-    finalize(() =>{
+    finalize(() => {
       busyService.idle()
     })
   );

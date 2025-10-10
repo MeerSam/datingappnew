@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { LoginCreds, RegisterCreds, User } from '../../types/user';
 import { tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { LikesService } from './likes-service';
 
 // what this has is class can use dependency injection from angular into other components and classes
 
@@ -19,6 +20,7 @@ export class AccountService {
 // So it makes it a good place to store states that we need application wide.
 
   private  http = inject(HttpClient);
+  private likesService = inject(LikesService); // makes sure no cicular dependency when injecting other services into a service.
   currentUser = signal<User | null>(null);
 
   baseUrl = environment.apiUrl;
@@ -46,12 +48,13 @@ export class AccountService {
   setCurrentUser(user:User){
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user);
+    this.likesService.getLikeIds(); // after user is set
   }
 
   logout(){
     localStorage.removeItem('user');
     localStorage.removeItem('filters');
-
+    this.likesService.clearLikesIds(); // clear any like Ids 
     this.currentUser.set(null);
   }
 }

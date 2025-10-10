@@ -1,12 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { AccountService } from './account-service';
 import { of } from 'rxjs';
+import { LikesService } from './likes-service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InitService {
   private accountService = inject(AccountService);
+  private likesService= inject(LikesService);
   // we dont need constructor but we need a init method 
 
   init() {
@@ -14,6 +16,7 @@ export class InitService {
     if (!userString) return of(null);
     const user =JSON.parse(userString);
     this.accountService.currentUser.set(user);
+    this.likesService.getLikeIds();
 
     // this method has to be aync: And what we have to return is an observable. 
     // in angular we use observable for async code

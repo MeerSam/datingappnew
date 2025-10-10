@@ -8,13 +8,15 @@ namespace API.Data;
 
 public class MemberRepository(AppDbContext context) : IMemberRepository
 {
-    public async Task<PaginatedResult<Member>> GetMembersAsync(MemberParams memberParams)
+    // C# 12 allows constructor to be speciafied as above- It means the class takes a constructor parameter context of type AppDbContext, and this parameter is available throughout the class (like a field)
+
+        public async Task<PaginatedResult<Member>> GetMembersAsync(MemberParams memberParams)
     {
         // return await context.Members.Include(x => x.Photos).ToListAsync();
         var query = context.Members.AsQueryable();
 
         query = query.Where(x => x.Id != memberParams.CurrentMemberId);
-        
+
         if (memberParams.Gender != null)
         {
             query = query.Where(x => x.Gender == memberParams.Gender);
