@@ -16,7 +16,7 @@ export class MemberService {
 
   private baseUrl = environment.apiUrl;
   editMode = signal(false);
-  member = signal<Member | null>(null);
+  member = signal<Member | null>(null);   // not the loggedIn user but the clicked member
 
   getMembers(memberParams :MemberParams) {
     // pageNumber = 1, pageSize: number = 5

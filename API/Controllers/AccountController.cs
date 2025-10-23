@@ -14,6 +14,9 @@ namespace API.Controllers;
 
 public class AccountController(AppDbContext context,ITokenService tokenService) : BaseApiController
 {
+    // Reminder that we're using conventions for the name of the controller.
+    // So controller has to be spelled accurately in order that we can use this as a route parameter 
+    //  ../api/account/..    
     [HttpPost("register")] // /api/account/register
 
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)

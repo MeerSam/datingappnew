@@ -1,1 +1,53 @@
-<p>member-messages works!</p>
+<div class="flex flex-col w-full h-[73vh]">
+  <!-- h-[65vh] -->
+  <div class="flex flex-col flex-grow overflow-auto">
+    @if (messages()) {
+        @if (messages().length > 0) {
+          @for (message of messages(); track message.id) {    
+            <!-- currentUserId() !== message.senderId -->
+            <div class="chat"
+                [class.chat-start]="!message.currentUserSender"
+                [class.chat-end]="message.currentUserSender">
+                <div class="chat-image avatar">
+                    <div class="w-10 rounded-full">
+                        <img alt="image of user" src={{message.senderImageUrl}} />
+                    </div>
+                </div>
+                <div class="chat-header">
+                    {{message.senderDisplayName}} 
+                    <time class="text-xs opacity-50">{{message.messageSent | date: 'shortTime' }}</time>
+                </div>
+                <div class="chat-bubble">{{message.content}}</div>
+                
+                @if (message.currentUserSender && message.dateRead){ 
+                  <div class="chat-footer opacity-50">Seen at {{message.dateRead| timeAgo }}</div>
+                } @else if (message.currentUserSender && !message.dateRead){ 
+                  <div class="chat-footer opacity-50">Not read</div>
+                }  @else {
+                    <div class="chat-footer opacity-50">Delivered</div>
+                }
+            </div> 
+          }
+          <!--  template reference variable of message end ref.
+          And we'll access this reference inside our component and use basically JavaScript functionality to get 
+          the browser to scroll down to this location just above our input.
+
+          @ViewChild('messageEndRef')
+          -->
+          <div #messageEndRef></div>
+        } @else {
+        <div class="chat chat-start"><div class="chat-bubble">No messages</div></div>
+        }
+    }
+  </div>
+  <div class="flex join w-full">
+    <input [(ngModel)]="messageContent" 
+      class="input w-full" 
+      placeholder="Enter your message" 
+      (keydown.enter)="sendMessage()">
+    <button (click)="sendMessage()" type-="submit" class="btn btn-primary join-item">
+      Send
+    </button>
+  </div>
+</div> 
+ 

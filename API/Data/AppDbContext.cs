@@ -30,8 +30,10 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
     public DbSet<Member> Members { get; set; }
     public DbSet<Photo> Photos { get; set; }
-    
+
     public DbSet<MemberLike> Likes { get; set; }
+
+    public DbSet<Message> Messages { get; set; }
 
     // Inorder to return a UTC date since sqlite does not save the date in UTC format 
     // we're going to override a DbContext method called OnModelCreating
@@ -42,10 +44,20 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         //So we use this when we want to override or configure Entity Framework functionality.
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Message>()
+            .HasOne(x => x.Recipient)
+            .WithMany(m => m.MessagesReceived)
+            .OnDelete(DeleteBehavior.Restrict); // receiver deleting message should not delete for sender so we add restrictions
+
+        modelBuilder.Entity<Message>()
+            .HasOne(x => x.Sender)
+            .WithMany(m => m.MessagesSent)
+            .OnDelete(DeleteBehavior.Restrict);// sender deleting message should not delete for recipient so we add restrictions
+
         //MemberLike does not have a Id : we want our primary key to be a combination of SourceMemberId and TargetMemberId, 
         // and that's what we accomplished by configuring haskey.
         modelBuilder.Entity<MemberLike>()
-        .HasKey(x => new  {x.SourceMemberId , x.TargetMemberId});
+        .HasKey(x => new { x.SourceMemberId, x.TargetMemberId });
 
         modelBuilder.Entity<MemberLike>()
             .HasOne(s => s.SourceMember)
@@ -65,6 +77,14 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
         );
 
+        // for Message we've used Optional Datetime (i.e. DateRead is Datetime?)
+        // for the compiler its not the same that is why the DateRead was not returning a UTC Time
+        // therefore we must do the same as above for optional DateTime
+        var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => v.HasValue ?  v.Value.ToUniversalTime() : null,
+            v => v.HasValue ?  DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : null
+        );
+
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entityType.GetProperties())
@@ -72,6 +92,10 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
                 if (property.ClrType == typeof(DateTime))
                 {
                     property.SetValueConverter(dateTimeConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(nullableDateTimeConverter);
                 }
             }
         }

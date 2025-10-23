@@ -15,7 +15,10 @@ namespace API.Controllers;
 
 //localhost:5001/api/likes
 public class LikesController(ILikesRepository likesRepository) : BaseApiController
-{
+{        
+    // Reminder that we're using conventions for the name of the controller.
+    // So controller has to be spelled accurately in order that we can use this as a route parameter 
+    //  ../api/likes
     [HttpPost("{targetMemberId}")]
     public async Task<ActionResult> ToggleLike(string targetMemberId)
     {

@@ -22,8 +22,11 @@ namespace API.Controllers
     public class MembersController(IMemberRepository memberRepository,
     IPhotoService photoService) : BaseApiController
     {
+        // Reminder that we're using conventions for the name of the controller.
+        // So controller has to be spelled accurately in order that we can use this as a route parameter 
+        //  ../api/members
         [HttpGet]//localhost:5001/api/members
-        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery]MemberParams memberParams)
+        public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers([FromQuery] MemberParams memberParams)
         {
             // Injecting AppDbContext as ->   MembersController(AppDbContext context)
             // Changed to IMemberRepository
@@ -141,7 +144,7 @@ namespace API.Controllers
         [HttpDelete("delete-photo/{photoId}")]
 
         public async Task<ActionResult> DeletePhoto(int photoId)
-        { 
+        {
             var member = await memberRepository.GetMemberForUpdateAsync(User.GetMemberId());
 
             if (member == null) return BadRequest("Could not get a member to delete  photos");
