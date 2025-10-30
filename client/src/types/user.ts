@@ -4,6 +4,7 @@ export type User = {
     email: string;
     token: string;
     imageUrl?: string;
+    roles:string[];
 
 }
 // you could the same with interface  export interface User

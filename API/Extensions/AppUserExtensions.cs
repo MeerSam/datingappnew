@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
 using API.Interfaces;
@@ -11,15 +12,15 @@ public static class AppUserExtensions
     //meaning we do not need to create an instance of it and can directly use it 
     // note: cannot use dependency injection therefore  the TokenService was passed as parameter
 
-    public static UserDto ToDto(this AppUser user, ITokenService tokenService)
+    public static async Task<UserDto> ToDto(this AppUser user, ITokenService tokenService)
     { 
         return new UserDto
         {
             Id = user.Id,
-            Email = user.Email,
+            Email = user.Email!,
             DisplayName = user.DisplayName,
             ImageUrl = user.ImageUrl,
-            Token = tokenService.CreateToken(user)
+            Token = await tokenService.CreateToken(user)
         }; 
     }
 }

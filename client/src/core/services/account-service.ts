@@ -26,35 +26,75 @@ export class AccountService {
   baseUrl = environment.apiUrl;
 
   register(creds:RegisterCreds){
-    return this.http.post<User>(this.baseUrl + 'account/register', creds).pipe(
+    return this.http.post<User>(this.baseUrl + 'account/register'
+        , creds
+        ,{withCredentials: true}).pipe(
       tap(user => {
          if(user){
           this.setCurrentUser(user)
+          this.startTokenRefreshInterval()
          }
       })
     )
   }
 
   login(creds:LoginCreds){
-    return this.http.post<User>(this.baseUrl + 'account/login', creds).pipe(
+    return this.http.post<User>(this.baseUrl + 'account/login'
+      , creds
+      ,{withCredentials: true}).pipe(
       tap(user => {
         if(user){
           this.setCurrentUser(user)
+          this.startTokenRefreshInterval()
         }
       })
     )
   } 
 
+  refreshToken(){
+    return this.http.post<User>(this.baseUrl + 'account/refresh-token',{}, {withCredentials:true})
+  }
+
+  startTokenRefreshInterval(){
+    setInterval(() => {
+      this.http.post<User>(this.baseUrl + 'account/refresh-token',{}, {withCredentials:true}).subscribe({
+        next: user => {
+          this.setCurrentUser(user)
+        },
+        error : () =>{
+          this.logout()
+        }
+      })
+    },5 * 60 * 1000)
+
+    //10sec = 10 *1000 
+  }
+
   setCurrentUser(user:User){
-    localStorage.setItem('user', JSON.stringify(user));
+    user.roles = this.getRolesFromToken(user);
+    // localStorage.setItem('user', JSON.stringify(user)); // removed 215 using refresh tokens
     this.currentUser.set(user);
     this.likesService.getLikeIds(); // after user is set
   }
 
   logout(){
-    localStorage.removeItem('user');
+    // localStorage.removeItem('user'); // removed 215 using refresh tokens
     localStorage.removeItem('filters');
     this.likesService.clearLikesIds(); // clear any like Ids 
     this.currentUser.set(null);
+  }
+  private getRolesFromToken(user: User): string[]{
+    // passsing user as parameter and returning string array
+    const payload = user.token.split(".")[1]; //get payload
+    // token has 3 parts : 1st part : token header (info about expiration and type of token)
+    //part 2 : payload : encoded not encrypted 
+    //part 3: encrypted and cannot decipher withou the secret which is in API and never leaves server
+
+    // payload : decode // base64 encoded string
+    const  decoded = atob(payload); //we'll use a native JavaScript function called atob 
+
+    const jsonPayload = JSON.parse(decoded) ;
+
+    return Array.isArray(jsonPayload.role)? jsonPayload.role: [jsonPayload.role] 
   }
 }

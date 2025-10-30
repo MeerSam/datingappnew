@@ -14,14 +14,14 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes, withViewTransitions()),
-    provideHttpClient(withInterceptors([errorInterceptor,jwtInterceptor,loadingInterceptor])),
+    provideHttpClient(withInterceptors([errorInterceptor, jwtInterceptor, loadingInterceptor])),
     provideAppInitializer(async () => {
       const initService = inject(InitService);
       return new Promise<void>((resolve) => {
         setTimeout(async () => {
           // we have to get api info later so we need to try catch if there is failure
           try {
-            return lastValueFrom(initService.init());
+            await lastValueFrom(initService.init());
           } finally {
             // finally when the app is initialized do this
             // We're going to have a little splash screen whilst we're waiting for the app to initialize.

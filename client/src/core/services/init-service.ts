@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { AccountService } from './account-service';
-import { of } from 'rxjs';
+import { of, tap } from 'rxjs';
 import { LikesService } from './likes-service';
 
 @Injectable({
@@ -8,15 +8,25 @@ import { LikesService } from './likes-service';
 })
 export class InitService {
   private accountService = inject(AccountService);
-  private likesService= inject(LikesService);
+  // private likesService = inject(LikesService);
   // we dont need constructor but we need a init method 
 
   init() {
-    const userString = localStorage.getItem('user');
+    /* //// removed from local storage and using refresh tokens
+    const userString = localStorage.getItem('user'); 
     if (!userString) return of(null);
     const user =JSON.parse(userString);
+
     this.accountService.currentUser.set(user);
-    this.likesService.getLikeIds();
+    this.likesService.getLikeIds(); */
+    return this.accountService.refreshToken().pipe(
+      tap(user => {
+        if (user){
+          this.accountService.setCurrentUser(user);
+          this.accountService.startTokenRefreshInterval()
+        }
+      })
+    )
 
     // this method has to be aync: And what we have to return is an observable. 
     // in angular we use observable for async code
@@ -27,7 +37,7 @@ export class InitService {
     //do the following to achieve that
 
     //observableof: now called of
-    return of(null);
+    // return of(null);
   }
-  
+
 }

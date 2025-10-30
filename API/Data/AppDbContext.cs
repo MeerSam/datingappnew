@@ -16,17 +16,22 @@ AppDbContext is crucial for simplifying database interactions, maintaining organ
 
 using System;
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Data;
 
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
 {
     //public AppDbContext(DbContextOptions options) : base(options){}
     // commented because : used primary constructor
-
-    public DbSet<AppUser> Users { get; set; }
+    // public DbSet<AppUser> Users { get; set; } : now going to be provided in the identity Dbcontext. 
+    // What we're doing here is we're handing over the configuration of user storage to ASP.Net identity.
+    // So we don't have our own users table anymore.
+    // We're going to have one created for us using this system.
+    // public DbSet<AppUser> Users { get; set; }
 
     public DbSet<Member> Members { get; set; }
     public DbSet<Photo> Photos { get; set; }
@@ -41,8 +46,19 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     // we'll use the ModelBuilder to configure the entity to get the functionality we want for Likes feature
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //So we use this when we want to override or configure Entity Framework functionality.
+        // OnModelCreating which is responsible for configuring the code that goes into our migrations.
+        // we're going to do here is add data that will put the seed generating code into the migration 
+        // that we create when we're ready to create the migration.
+
+        // So we use this when we want to override or configure Entity Framework functionality.
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<IdentityRole>()
+            .HasData(
+                new IdentityRole { Id = "member-id", Name = "Member", NormalizedName = "MEMBER" },
+                new IdentityRole { Id = "moderator-id", Name = "Moderator", NormalizedName = "MODERATOR" },
+                new IdentityRole { Id = "admin-id", Name = "Admin", NormalizedName = "ADMIN" }
+            );
 
         modelBuilder.Entity<Message>()
             .HasOne(x => x.Recipient)
@@ -81,8 +97,8 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         // for the compiler its not the same that is why the DateRead was not returning a UTC Time
         // therefore we must do the same as above for optional DateTime
         var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
-            v => v.HasValue ?  v.Value.ToUniversalTime() : null,
-            v => v.HasValue ?  DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : null
+            v => v.HasValue ? v.Value.ToUniversalTime() : null,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : null
         );
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

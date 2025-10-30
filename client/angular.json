@@ -8,7 +8,7 @@
       "schematics": {
         "@schematics/angular:component": {
           "path": "src",
-          "skipTests": true 
+          "skipTests": true
         },
         "@schematics/angular:service": {
           "skipTests": true,
@@ -29,6 +29,10 @@
         "@schematics/angular:pipe": {
           "skipTests": true,
           "path": "src/core/pipes"
+        },
+        "@schematics/angular:directive": {
+          "skipTests": true,
+          "path": "src/shared/directives"
         }
       },
       "root": "",
@@ -81,6 +85,11 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "ssl": true,
+            "sslKey": "ssl/localhost-key.pem",
+            "sslCert": "ssl/localhost.pem"
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
