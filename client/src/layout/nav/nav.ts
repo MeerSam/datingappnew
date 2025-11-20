@@ -22,7 +22,8 @@ export class Nav implements OnInit {
   protected creds: any = {}
   protected selectedTheme = signal<string>(localStorage.getItem('theme') || 'light');
   protected themes = themes;
- //protected loggedIn = signal(false)
+  //protected loggedIn = signal(false)
+  protected loading = signal(false);
 
   ngOnInit(): void {
     document.documentElement.setAttribute('data-theme', this.selectedTheme());
@@ -37,7 +38,14 @@ export class Nav implements OnInit {
     if (elem) elem.blur();
   }
 
+  handleSelectUserItem(){ 
+    // closing dropdown after the theme selected
+    const elem = document.activeElement as HTMLDivElement;
+    if (elem) elem.blur();
+  }
+
   login() {
+    this.loading.set(true);
     console.log('Login method called');
     this.accountService.login(this.creds).subscribe(
       {
@@ -50,8 +58,9 @@ export class Nav implements OnInit {
         },
         error: error => {
           this.toast.error(error.error);
+          this.loading.set(false);
         },
-        complete: () => console.log('Completed the http request')
+        complete: () => this.loading.set(false)
       });
   }
 
@@ -59,6 +68,7 @@ export class Nav implements OnInit {
     console.log("Logout initiated");
     // this.loggedIn.set(false);
     this.accountService.logout();
+    this.router.navigateByUrl('');
   }
 
 }

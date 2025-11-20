@@ -38,7 +38,7 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
     }
   }
 
-  const cachKey = generateCacheKey(req.url, req.params);
+  const cacheKey = generateCacheKey(req.url, req.params);
 
   if (req.method.includes('POST') && req.url.includes('/likes')) {
     invalidateCache('/likes')
@@ -48,10 +48,15 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
     invalidateCache('/messages')
   }
 
+  // when user logsout we need to clear cache
+  if (req.method.includes('POST') && req.url.includes('/logout')) {
+    cache.clear();
+  }
+
   if (req.method === 'GET') {
     // const cachedResponse = cache.get(req.url);
-    console.log(cachKey);
-    const cachedResponse = cache.get(cachKey);
+    console.log(cacheKey);
+    const cachedResponse = cache.get(cacheKey);
     if (cachedResponse) {
       return of(cachedResponse);
     }
@@ -64,7 +69,7 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     delay(500),
     tap(reponse => {
-      cache.set(cachKey, reponse);
+      cache.set(cacheKey, reponse);
     }),
     finalize(() => {
       busyService.idle()

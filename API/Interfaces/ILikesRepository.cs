@@ -19,7 +19,7 @@ public interface ILikesRepository
 
     void AddLike(MemberLike like);
 
-    Task<bool> SaveAllChanges();
+    // Task<bool> SaveAllChanges();// implemnted Using IUnitOfWork
 
 
 }

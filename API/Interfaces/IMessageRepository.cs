@@ -17,7 +17,7 @@ public interface IMessageRepository
 
     Task<IReadOnlyList<MessageDto>> GetMessageThread(string currentMemberId, string recipientId);
 
-    Task<bool> SaveAllAsync();
+    // Task<bool> SaveAllAsync();// implemnted Using IUnitOfWork
 
     /*track the members of a group inside a signalR hub (one user can make connections from 
         multiple devices  : each of those is going to have their own unique connection.). 
