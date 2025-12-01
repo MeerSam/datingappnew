@@ -43,10 +43,9 @@ public class TokenService(IConfiguration config,UserManager<AppUser> userManager
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(7),
-
+            Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = creds
-        };
+        }; // changed from AddMinutes(7) in order to keep the JWT longer 
 
         var tokenHandler = new JwtSecurityTokenHandler();
 

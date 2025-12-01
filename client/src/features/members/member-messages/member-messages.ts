@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, inject, input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, model, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { MessageService } from '../../../core/services/message-service';
 import { Message } from '../../../types/message';
 import { AccountService } from '../../../core/services/account-service';
@@ -25,7 +25,7 @@ export class MemberMessages implements OnInit, OnDestroy {
   protected presenceService = inject(PresenceService);
   private route = inject(ActivatedRoute)
   // protected messages = signal<Message[]>([]); // removed since using messageservice.messageThread()
-  protected messageContent = '';
+  protected messageContent = model(''); // model is a type of signal
 
   constructor() {
     // since zonless angular we need to use effect from angular core : Once registered during compoent creation at constructor 
@@ -74,10 +74,10 @@ export class MemberMessages implements OnInit, OnDestroy {
 
   sendMessage() {
     const recipientId = this.memberService.member()?.id;
-    if (!recipientId) return;
+    if (!recipientId || !this.messageContent()) return;
     
-    this.messageService.sendMessage(recipientId, this.messageContent)?.then(()=>{
-      this.messageContent = '';
+    this.messageService.sendMessage(recipientId, this.messageContent())?.then(()=>{
+      this.messageContent.set('');
     })
     /*Since implementing with signalR hub we are receiving a promise and not an observable
     thus removing subscribe and writing then(callback function)*/

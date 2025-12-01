@@ -68,7 +68,8 @@ export class AccountService {
           this.logout()
         }
       })
-    }, 5 * 60 * 1000)
+    }, 14 * 24 * 60  * 60 * 1000) // changing so the Azure SQl credits dont run out to 14 days 
+    //5 * 60 * 1000 to 5 * 60 * 1000
 
     //10sec = 10 *1000 // 5 min refresh-token 
   }
@@ -85,7 +86,6 @@ export class AccountService {
 
   logout() {
     //logout from AI Side since the refresh token persisted and caused to signin without creds #235
-
     this.http.post(this.baseUrl + 'account/logout',{}, { withCredentials: true }).subscribe({
       next: () => {
         // localStorage.removeItem('user'); // removed 215 using refresh tokens
@@ -94,12 +94,7 @@ export class AccountService {
         this.currentUser.set(null);
         this.presenceService.stopHubConnection();
       }, 
-    });
-
-
-    
-
-
+    });  
   }
 
   private getRolesFromToken(user: User): string[] {

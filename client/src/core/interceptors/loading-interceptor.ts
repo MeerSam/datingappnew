@@ -4,11 +4,15 @@ import { BusyService } from '../services/busy-service';
 import { delay, finalize, identity, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-
+type CacheEntry = {
+  response: HttpEvent<unknown>;
+  timestamp: number;
+}
 // Map : key/value pair key in this case in the get request url
 // we're  only caching get requests 
 
-const cache = new Map<string, HttpEvent<unknown>>();
+const cache = new Map<string, CacheEntry>();
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes 
 
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
@@ -33,7 +37,7 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
     for (const key of cache.keys()) {
       if (key.includes(urlPattern)) {
         cache.delete(key);
-        console.log(`Cache invalidated for:  ${key}`);
+        // console.log(`Cache invalidated for:  ${key}`);
       }
 
     }
@@ -56,10 +60,15 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (req.method === 'GET') {
     // const cachedResponse = cache.get(req.url);
-    console.log(cacheKey);
+    // console.log(cacheKey);
     const cachedResponse = cache.get(cacheKey);
     if (cachedResponse) {
-      return of(cachedResponse);
+      const isExpired = (Date.now() - cachedResponse.timestamp) > CACHE_DURATION_MS;
+      if (!isExpired) {
+        return of(cachedResponse.response);
+      } else {
+        cache.delete(cacheKey)
+      }
     }
   }
 
@@ -69,8 +78,11 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   // 500ms half second : fake delay remove for production #243 identity ==null 
   return next(req).pipe(
     (environment.production ? identity : delay(500)),
-    tap(reponse => {
-      cache.set(cacheKey, reponse);
+    tap(response => {
+      cache.set(cacheKey, {
+        response,
+        timestamp: Date.now()
+      });
     }),
     finalize(() => {
       busyService.idle()

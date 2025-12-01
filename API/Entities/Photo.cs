@@ -10,6 +10,8 @@ public class Photo
 
     public string? PublicId { get; set; }
 
+    public bool IsApproved { get; set; }
+
 
     //Navigation Property 1member - can have many photos
     // Nav prop we dont make it required and we assign intial value = null!
